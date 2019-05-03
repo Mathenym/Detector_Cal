@@ -1,60 +1,75 @@
-
+#%%
+get_ipython().run_line_magic('load_ext', 'autoreload')
+get_ipython().run_line_magic('autoreload', '2')
+import seaborn as sns 
+import matplotlib as mpl
+mpl.rcParams.update(_VSCode_defaultMatplotlib_Params)
+sns.set_style(rc = {'figure.facecolor':'white'})
+import numpy as np
+import uproot 
+import matplotlib.pyplot as plt
+from scipy.signal import find_peaks,peak_widths,peak_prominences
+from scipy import stats
 from fit_peak import * 
+from pylab import *
+from scipy.optimize import curve_fit
+import pandas as pd 
+from Calibrate import *
+from Peak_find import * 
+from Calibration_Curve import * 
+
+#%%
+Energy1 = []
+for arrays in uproot.iterate("~/Desktop/multi_run/R1/FILTERED/*.root","Data_F;4","Energy",outputtype=list):
+    
+    for x in arrays:
+        Energy1.extend(x)
+        
+bin = np.arange(0,max(Energy1))
+y,binedges = np.histogram(Energy1,bin)
+bincenters = 0.5*(binedges[1:]+binedges[:-1])
 
 
-def Calibrate_linear(Energy1,ADC_loc,peaks,widths,bin,slope,intercept):
-
-    EN = [511,1274,1785,2614]
-
-    E = np.array(Energy1)
-    E1_cal = slope*E + intercept
-    cal_bin1 = slope*bin + intercept
-    d1,binedge1 = np.histogram(E1_cal,cal_bin1)       
-    bincenter1 = 0.5*(binedge1[1:]+binedge1[:-1])
-    cal_peak1 = slope*peaks + intercept 
-    cal_width1 = slope*widths[0] - intercept
+#%%
+N = 4
+ADC_loc, ADC_fit,peaks,widths,amp,fit,Error = Peak_locate(y,bincenters,N)
 
 
-    amps1 = d1[peaks]
+#%%
+EN = [511,1274,1785,2614] #where peaks should be in keV
+slope,intercept = Calibration_Curve(ADC_fit,ADC_loc,EN,Error)
 
-    for i in np.arange(len(ADC_loc)):
-        params1 = [amps1[i],cal_peak1[i],cal_width1[i]/2,5,10]    
-        results,fit = fit_peak(bincenter1,d1,params1)
+z = Calibration_Curve_Quadractic(ADC_fit,ADC_loc,EN,Error)
 
-        print('Fit Results for ', EN[i])
-        for key in fit.params:
-            print(key, "=", "{0:.2f}".format(fit.params[key].value), "+/-", "{0:.2f}".format(fit.params[key].stderr))
-            
+#%%
 
-
-
-    return d1, bincenter1 
-
-
-
-def Calibrate_Quadratic(Energy1,ADC_loc,peaks,widths,bin,z):
-
-
-    E = np.array(Energy1)
-    E2_cal = z[0]*E**2 + z[1]*E + z[2] 
-
-    cal_bin2 = z[0]*bin**2 + z[1]*bin + z[2]
-
-    d2,binedge2 = np.histogram(E2_cal,cal_bin2)       
-
-    bincenter2 = 0.5*(binedge2[1:]+binedge2[:-1])
-
-    cal_peak2 = z[0]*peaks**2 + z[1]*peaks + z[2]
-
-    cal_width2 = z[0]*widths[0]**2 + z[1]*widths[0] + z[2]
+d1,bincenter1 = Calibrate_linear(Energy1,ADC_loc,peaks,widths,bin,slope,intercept)
+#%%
+df2, bincenter2 = Calibrate_Quadratic(Energy1,ADC_loc,peaks,widths,bin,z)
 
 
 
+#%%
+plt.figure(figsize=(9.0,8.0))
+plt.plot(bincenter1,d1,label = 'Spectrum')
 
-    amps2 = d2[peaks]
 
-    for i in np.arange(len(ADC_loc)):
-        params2 = [amps2[i],cal_peak2[i],cal_width2[i]/2,5,10]    
-        fit_peak(bincenter2,d2,params2)
+for x in EN:
+        plt.vlines(x,0,10**9,linestyle='--', linewidth=0.5)
 
-    return d2, bincenter2 
+plt.xlim(0,3000)
+plt.ylim(1,10**8)
+plt.yscale('log')
+plt.title('Calibrated Energy Spectrum Det_65008-01994')
+plt.xlabel("Energy [keV]")
+plt.ylabel("Count ")
+plt.grid(linestyle='-', linewidth=0.35)
+plt.legend() 
+
+plt.show()
+
+
+#%%
+
+
+
