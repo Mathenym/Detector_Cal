@@ -21,32 +21,32 @@ def fit_peak(bincenters,y,params):
         """a line"""
         return slope*x + intercept
 
-    expon = ExponentialModel(prefix='exp_')
-
+    
     mod = Model(gaussian) + Model(line)
-    #pars = mod.make_params(amp=870314, cen=94.5, wid=9, exp_amplitude=5, exp_decay=10)
+
     pars = mod.make_params(amp = params[0],cen = params[1],wid = params[2],slope=params[3],intercept = params[4])
+
 
     fit = mod.fit(y[cut],pars, x=x[cut])
 
-
-    
-   
-
-
-    #print(result.fit_report([1]))
-
-    plt.plot(x, y)
-    plt.plot(x[cut], fit.best_fit, 'r--')
+    plt.figure(figsize = (9.0,8.0))
+    plt.plot(x, y,label = "Peak")
+    plt.plot(x[cut], fit.best_fit, 'r--',label = 'Best Fit')
     plt.yscale('log')
-    plt.ylim(0,10**6)
+    #plt.ylim(params[0]-1000,params[0]+1000)
     plt.xlim(params[1]-1.5*params[2],1.5*params[2]+params[1])
+    plt.xlabel("Energy [keV]")
+    plt.ylabel("Count ")
+    plt.grid(linestyle='-', linewidth=0.35)
+    plt.legend() 
+
+
 
     plt.show()
     
     parameters = []
     for key in fit.params:
-        print(key, "=", "{0:.2f}".format(fit.params[key].value), "+/-", "{0:.2f}".format(fit.params[key].stderr))
+        #print(key, "=", "{0:.2f}".format(fit.params[key].value), "+/-", "{0:.2f}".format(fit.params[key].stderr))
         parameters.append(fit.params[key].value)
 
-    return parameters
+    return parameters,fit
