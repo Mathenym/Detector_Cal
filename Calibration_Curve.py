@@ -6,7 +6,7 @@ import numpy as np
 
 
 
-def Calibration_Curve(ADC,ADC_loc,EN,Error):
+def Calibration_Curve(ADC,ADC_loc,EN,Error,N):
 
     slope, intercept, r_value, p_value, std_err = stats.linregress(ADC,EN)
     
@@ -23,8 +23,10 @@ def Calibration_Curve(ADC,ADC_loc,EN,Error):
     for x in Error:
         Error = x*100
 
-    
-    adc = ADC_loc 
+    if N == 4:
+        adc = ADC_loc
+    else: 
+        adc = ADC_loc[:-1] 
 
     plt.figure(figsize=(9.0,8.0))
 
@@ -34,6 +36,7 @@ def Calibration_Curve(ADC,ADC_loc,EN,Error):
     plt.text(2000,110, "***Errors are multiplied by 100***")
     plt.ylabel('ADC Location')
     plt.xlabel('Energy [keV]')
+    #plt.xlim(0,2500)
     plt.grid(which='major',axis= 'both',linestyle='--')
     plt.legend()
     plt.show()

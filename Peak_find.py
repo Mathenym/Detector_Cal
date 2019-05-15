@@ -8,7 +8,7 @@ import pandas as pd
 def Peak_locate(y,bincenters,N):
 
     Y = y
-    peaks, properties = find_peaks(Y,distance = 65,prominence =10**3,width = [0,18])
+    peaks, properties = find_peaks(Y,distance = 65,prominence =10**2,width = [0,18])
     peaks1,properties1 = find_peaks(Y)
 
     widths = peak_widths(Y, peaks) #inital peak width guess 
@@ -21,7 +21,7 @@ def Peak_locate(y,bincenters,N):
         ADC_loc.append(a)
 
     
-    array = np.empty([3,5])
+  
     ADC_fit = []
     dat = []
     Err = np.array([])

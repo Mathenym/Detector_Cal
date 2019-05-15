@@ -17,6 +17,11 @@ def Calibrate_linear(Energy1,ADC_loc,peaks,widths,bin,slope,intercept):
 
     amps1 = d1[peaks]
 
+    wid = [] 
+    wid_error = []
+    cen = []
+    amp = []
+
     for i in np.arange(len(ADC_loc)):
         params1 = [amps1[i],cal_peak1[i],cal_width1[i]/2,5,10]    
         results,fit = fit_peak(bincenter1,d1,params1)
@@ -24,11 +29,16 @@ def Calibrate_linear(Energy1,ADC_loc,peaks,widths,bin,slope,intercept):
         print('Fit Results for ', EN[i])
         for key in fit.params:
             print(key, "=", "{0:.2f}".format(fit.params[key].value), "+/-", "{0:.2f}".format(fit.params[key].stderr))
-            
+        wid.append(np.abs(fit.params['wid'].value))
+        wid_error.append((fit.params['wid'].stderr))
+        cen.append(np.abs(fit.params['cen'].value))
+        amp.append(np.abs(fit.params['amp'].value))
 
 
 
-    return d1, bincenter1 
+    #print('width =', wid)
+
+    return d1, bincenter1, wid ,cen, amp, wid_error
 
 
 
