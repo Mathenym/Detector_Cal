@@ -138,7 +138,7 @@ def fit_peak(bincenters,y,params,weights,input):
 
 
 
-def Calibration_Curve(ADC_center,Error,EN,N,title,detector):
+def Calibration_Curve(ADC_center,Error,EN,N,title,detector,run_ID):
     
     '''
     Purpose of this function is to examin the relationship between ADC-channel location and the corresponding energy in [keV]
@@ -159,6 +159,10 @@ def Calibration_Curve(ADC_center,Error,EN,N,title,detector):
 
     fit = []
     
+    #Returns slope and intercept required for energy calibration. 
+    Slope = 1/slope
+    Intercept = -intercept/slope
+    
     # easy plot scaling
     if N == 2: 
         l = np.arange(0,200)
@@ -177,26 +181,39 @@ def Calibration_Curve(ADC_center,Error,EN,N,title,detector):
     
     # Make Plot 
     
-    plt.figure(figsize=(9.0,8.0))
+    #plt.figure(figsize=(9.0,8.0))
+    
+    fig, ax = plt.subplots(figsize=(9.0,8.0))
         
-    plt.errorbar(EN,ADC_center,yerr=Error,fmt ='o')
-    plt.plot(l,fit,label='y={:.2f}x + {:.2f}'.format(slope,intercept))
-    plt.title(title)
+    ax.errorbar(EN,ADC_center,yerr=Error,fmt ='o')
+    ax.plot(l,fit)
+    ax.set_title(title)
   
-    plt.ylabel('ADC Location')
-    plt.xlabel('Energy [keV]')
+    textstr = '\n'.join((
+    r'$R^2=%.3f$' % (r_value, ),
+    r'$\mathrm{C_0}=%.2f$' % (Intercept, ),
+    r'$\mathrm{C_1}=%.2f$' % (Slope, )))
+    
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    
+    ax.text(0.05, 0.95, textstr,transform=ax.transAxes, fontsize=14,verticalalignment='top', bbox=props)
+
+
+
+    ax.set_ylabel('ADC Location')
+    ax.set_xlabel('Energy [keV]')
     #plt.xlim(0,2500)
-    plt.grid(which='major',axis= 'both',linestyle='--')
-    plt.legend()
-    plt.savefig('Data/'+str(detector)+'/Figures/'+str(title))
+    ax.grid(which='major',axis= 'both',linestyle='--')
+    #plt.legend([r_value,'Data','C1 = {:.3f}'.format(slope),intercept])
+    #plt.savefig('Data/'+str(detector)+'/Figures/'+str(title))
+    plt.savefig("/Users/astropartlab2/Calibration/DAQ/"+str(detector)+"/DAQ/"+str(run_ID)+"/SCREENSHOTS/"+str(title)+".png")
     plt.show()
 
 
     
     #Returns slope and intercept required for energy calibration. 
     
-    Slope = 1/slope
-    Intercept = -intercept/slope
+
     
     print('Slope =',Slope, 'Intercept =', Intercept, 'error =', std_err)
 
